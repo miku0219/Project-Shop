@@ -118,3 +118,36 @@ applyFilterBtn.addEventListener("click", () => {
   // ▲ 渲染結果
   loadProducts(filtered);
 });
+
+// ====== 首頁：判斷登入狀態 ======
+function updateNavbarUser() {
+  const userArea = document.getElementById("userArea");
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const currentUser = localStorage.getItem("currentUser");
+
+  if (!userArea) return;
+
+  if (isLoggedIn === "true") {
+    userArea.innerHTML = `
+            <span>${currentUser}</span>
+            <button id="logoutBtn">登出</button>
+        `;
+  } else {
+    userArea.innerHTML = `
+            <a href="login.html">登入</a> |
+            <a href="register.html">註冊</a>
+        `;
+  }
+
+  // 登出功能
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.setItem("isLoggedIn", "false");
+      localStorage.removeItem("currentUser");
+      window.location.reload();
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", updateNavbarUser);
