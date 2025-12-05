@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&family=Yuji+Boku&display=swap');
+
+body {
+    margin: 0;
+    font-family: "uji Boku", serif;
+    background: url("../images/yixuan.png") no-repeat center center fixed;
+    background-size: cover;
+    overflow-x: hidden;
+}
+
+a{
+    text-decoration: none;
+    color: inherit;
+}
+
+.container::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: -1;
+}
+
+.logo {
+    font-size: 50px;
+    font-family: "LXGW WenKai TC", cursive;
+    font-weight: bold;
+    color: #3a3a3a;
+}
+
+/* navbar */
+.navbar {
+    background: rgba(255, 247, 230, 0.75);
+    border-bottom: 4px solid #a3312d;  /* 道觀柱子的紅 */
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 26px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+}
+
+.navbar .menu {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+}
+
+.navbar .menu li {
+    color: #362b16;
+    text-shadow: 0 0 6px #dec381;
+    transition: 0.3s;
+}
+
+.navbar .menu li:hover {
+    color: #b20000;
+    transform: scale(1.1);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 30px;
+    background: rgba(255, 255, 240, 0.95);
+    padding: 10px;
+    list-style: none;
+    border: 2px solid #6b5b4b;
+    border-radius: 6px;
+    min-width: 120px;
+}
+
+.dropdown-menu li {
+    padding: 5px 0;
+}
+
+.dropdown-menu li a {
+    color: #2b2b2b;
+    text-decoration: none;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/*select area*/
+.sidebar {
+    width: 220px;
+    float: left;
+    background: rgba(255, 253, 238, 0.8);
+    margin-left: 20px;
+    padding: 20px;
+    border: 3px solid #e8d49b;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255,240,200,0.7);
+    backdrop-filter: blur(3px);
+
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 20px;
+}
+
+.sidebar h3 {
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 30px;
+    color: #8c6d2c;
+    text-shadow: 0 0 7px #f5e6b3;
+}
+
+/*product area*/
+.product-table {
+    width: 80%;
+    margin-right: 20px;
+    border-collapse: collapse;
+    float: right;
+    background: rgba(255,255,245,0.9);
+    border: 4px solid #7c5c30; /* 木架邊框 */
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(255,255,200,0.5);
+    overflow: hidden;
+
+    text-align: center;
+    font-family: "LXGW WenKai TC", cursive;
+    font-weight: bold;
+}
+
+.product-table th {
+    background: linear-gradient(#8b6b3f, #6a4b26);
+    color: #fff2ca;
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 20px;
+    padding: 12px;
+    letter-spacing: 1px;
+}
+
+.product-table tr:hover {
+    background: rgba(255,245,200,0.3);
+    box-shadow: inset 0 0 15px rgba(255,240,200,0.4);
+    transition: 0.3s;
+}
+
+.product-img {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #c3b47e;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255,230,150,0.7);
+}
+
+.product-name {
+    color: #0d6371;  /* 青玉色 */
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(100,180,200,0.5);
+    cursor: pointer;
+}
+
+.product-name:hover {
+    color: #074c58;
+    transform: scale(1.05);
+}
+
+/*button*/
+.addCartBtn, #logoutBtn, #confirmAdd {
+    background: linear-gradient(#c89f53, #a07c3b);
+    color: #fff;
+    border: 2px solid #e8d49b;
+    padding: 7px 12px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255,240,200,0.8);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.addCartBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(255,255,200,1);
+}
+
+.addCartBtn:active {
+    transform: scale(0.92);
+}
+
+/*預覽*/
+.modal {
+    display: none;
+    position: fixed;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+
+    font-family: "LXGW WenKai TC", cursive;
+    font-weight: bolder;
+}
+
+.modal-content {
+    background: rgba(255,255,240,0.92);
+    border: 3px solid #c9b277;
+    border-radius: 10px;
+    padding: 20px;
+    width: 350px;
+    margin: 12% auto;
+    animation: scrollOpen 0.5s ease;
+    box-shadow: 0 0 25px rgba(255,240,180,0.7);
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 8px;       /* 上方距離 */
+    right: 12px;    /* 右方距離 */
+    cursor: pointer;
+    font-size: 28px;
+    color: #8c6d2c; /* 道觀風金棕色 */
+    text-shadow: 0 0 5px rgba(255,240,180,0.7);
+    transition: 0.2s;
+}
+
+.close:hover {
+    color: #b20000;
+    transform: scale(1.2);
+}
+
+@keyframes scrollOpen {
+    0% { transform: scaleY(0.3) rotateX(-30deg); opacity: 0; }
+    100% { transform: scaleY(1) rotateX(0deg); opacity: 1; }
+}

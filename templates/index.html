@@ -1,3 +1,96 @@
-{% extends "base.html"%}
-{% block section %}
-{% endblock %}
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隨便觀</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+
+    <!-- 🔹 NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">隨便觀</div>
+        <ul class="menu">
+            <li class="dropdown">
+                商品分類
+                <ul class="dropdown-menu">
+                    <li><a href="#">分類 A</a></li>
+                    <li><a href="#">分類 B</a></li>
+                    <li><a href="#">分類 C</a></li>
+                </ul>
+            </li>
+            <li><a href="#">歷史訂單</a></li>
+            <li><a href="#">購物車</a></li>
+            <li><a href="#">個人專區</a></li>
+        </ul>
+
+        <div class="user-info">
+            <span id="username">User123</span>
+            <button id="logoutBtn">登出</button>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- 🔹 篩選區域 -->
+        <aside class="sidebar">
+            <h3>篩選條件</h3>
+            <label>種類：</label>
+            <select id="filterCategory">
+                <option value="">全部</option>
+                <option value="A">A 類</option>
+                <option value="B">B 類</option>
+                <option value="C">C 類</option>
+            </select>
+            <br>
+            <label>價格上限：</label>
+            <input type="number" id="filterPrice" placeholder="輸入金額">
+            <br>
+            <button id="applyFilter">確認</button>
+        </aside>
+
+        <!-- 🔹 商品區 -->
+        <main class="product-area">
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th colspan="2">名稱</th>
+                        <th>種類</th>
+                        <th>價格</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="productList">
+                    <!-- JS 動態載入 -->
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <!-- 🔹 商品簡介 Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="modalClose">&times;</span>
+            <h2 id="modalName"></h2>
+            <p id="modalDesc"></p>
+        </div>
+    </div>
+
+    <!-- 🔹 加入購物車 Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="cartClose">&times;</span>
+            <h2>加入購物車</h2>
+            <p id="cartProductName"></p>
+            <label>數量：</label>
+            <input type="number" id="quantityInput" min="1" value="1">
+            <p>小計：<span id="subtotal">0</span> 元</p>
+            <button id="confirmAdd">確定加入</button>
+        </div>
+    </div>
+
+    <script src="../static/js/script.js"></script>
+
+</body>
+</html>
