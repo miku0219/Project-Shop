@@ -134,8 +134,8 @@ function updateNavbarUser() {
         `;
   } else {
     userArea.innerHTML = `
-            <a href="login.html">登入</a> |
-            <a href="register.html">註冊</a>
+            <a href="/login">登入</a> |
+            <a href="/register">註冊</a>
         `;
   }
 
