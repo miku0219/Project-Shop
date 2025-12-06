@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>隨便觀</title>
+        <link rel="stylesheet" href="../static/css/style.css">
+    </head>
+    <body>
+        <!-- NAVBAR 與首頁相同 -->
+        <nav class="navbar">
+            <div class="logo">隨便觀</div>
+            <ul class="menu">
+                <li class="dropdown">
+                    商品分類
+                    <ul class="dropdown-menu">
+                        <li><a href="/" data-level="">全部</a></li>
+                        <li><a href="/" data-level="一般">一般</a></li>
+                        <li><a href="/" data-level="精淬">精淬</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    個人專區
+                    <ul class="dropdown-menu">
+                        <li><a href="/cart">購物車</a></li>
+                        <li><a href="/orders">歷史訂單</a></li>
+                        <li><a href="#">修改密碼</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="user-info">
+                <span id="userArea"></span>
+            </div>
+        </nav>
+
+        <div class="table-container">
+            <h2>購物車</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>名稱</th>
+                        <th>價格</th>
+                        <th>數量</th>
+                        <th>小計</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="cartList">
+                    <!-- JS 動態生成 -->
+                </tbody>
+            </table>
+            
+        </div>
+        <div class="checkout-container">
+            <button id="checkoutBtn">結帳</button>
+        </div>
+
+        <script src="../static/js/script.js"></script>
+        <script src="../static/js/cart.js"></script>
+    </body>
+</html>

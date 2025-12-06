@@ -1,139 +1,103 @@
-// ====== 從後端載入商品 ======
+// =====================================
+//  全域變數
+// =====================================
+let allProducts = [];
+let currentFilters = {
+  level: "",
+  category: "",
+  price: 0,
+};
+let currentProduct = null;
+
+// =====================================
+//  從後端取得商品
+// =====================================
 async function fetchProducts() {
   const res = await fetch("http://127.0.0.1:5000/api/products");
-  const data = await res.json();
-  return data;
+  return await res.json();
 }
 
-// ====== 渲染商品到表格（可傳入商品陣列） ======
+// =====================================
+//  渲染商品到畫面
+// =====================================
 function renderProducts(products) {
   const productList = document.getElementById("productList");
   if (!productList) return;
 
   productList.innerHTML = "";
+
   products.forEach((p) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><img src="${p.image}" class="product-img"></td>
-      <td class="product-name" data-id="${p.id}" style="color:blue;cursor:pointer;">${p.name}</td>
-      <td>${p.category}</td>
-      <td>${p.stock}</td>
-      <td>$${p.price}</td>
-      <td><button class="addCartBtn" data-id="${p.id}">加入</button></td>
+        <td><img src="${p.image}" class="product-img"></td>
+        <td class="product-name" data-id="${p.id}" data-level="${p.level}">${p.name}</td>
+        <td>${p.category}</td>
+        <td>${p.stock}</td>
+        <td>$${p.price}</td>
+        <td><button class="addCartBtn" data-id="${p.id}">加入</button></td>
     `;
     productList.appendChild(tr);
   });
 }
 
-// ====== 載入商品（頁面初始化） ======
-async function loadProducts() {
-  const products = await fetchProducts();
-  window.loadedProducts = products; // 全域存放
-  renderProducts(products);
-}
+// =====================================
+//  套用所有篩選 + 新增排序
+// =====================================
+function applyFilters() {
+  let filtered = [...allProducts];
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadProducts();
-  updateNavbarUser();
-});
-
-// ====== 商品 Modal ======
-const modal = document.getElementById("productModal");
-const modalClose = document.getElementById("modalClose");
-
-document.addEventListener("click", (e) => {
-  if (e.target.classList.contains("product-name")) {
-    const id = e.target.dataset.id;
-    const p = window.loadedProducts.find((x) => x.id == id);
-    if (!p) return;
-
-    document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalDesc").innerText = p.description;
-    document.getElementById("modalImg").src = p.image;
-
-    modal.style.display = "block";
+  // Level 篩選
+  if (currentFilters.level !== "") {
+    filtered = filtered.filter((p) => p.level === currentFilters.level);
   }
-});
-modalClose.onclick = () => (modal.style.display = "none");
 
-// ====== 加入購物車 Modal ======
-const cartModal = document.getElementById("cartModal");
-const cartClose = document.getElementById("cartClose");
-
-let currentProduct = null;
-
-document.addEventListener("click", (e) => {
-  // 按下加入購物車按鈕
-  if (e.target.classList.contains("addCartBtn")) {
-    const id = e.target.dataset.id;
-
-    // ✅ 使用 window.loadedProducts
-    currentProduct = window.loadedProducts.find((x) => x.id == id);
-
-    if (!currentProduct) {
-      console.error("找不到商品：ID =", id);
-      return;
-    }
-
-    document.getElementById("cartProductName").innerText = currentProduct.name;
-    document.getElementById("subtotal").innerText = currentProduct.price;
-
-    cartModal.style.display = "block";
+  // 種類篩選
+  if (currentFilters.category !== "") {
+    filtered = filtered.filter((p) => p.category === currentFilters.category);
   }
-});
 
-// 關閉 Modal
-cartClose.onclick = () => (cartModal.style.display = "none");
-
-// 計算小計
-const qtyInput = document.getElementById("cartQty");
-if (qtyInput) {
-  qtyInput.addEventListener("input", () => {
-    if (!currentProduct) return;
-    const qty = Number(qtyInput.value) || 1;
-    document.getElementById("subtotal").innerText = (
-      qty * currentProduct.price
-    ).toFixed(2);
-  });
-}
-
-// 確定加入購物車
-document.getElementById("confirmAdd").onclick = () => {
-  if (!currentProduct) {
-    alert("請先選擇商品！");
-    return;
+  // 價格上限
+  if (currentFilters.price > 0) {
+    filtered = filtered.filter((p) => p.price <= currentFilters.price);
   }
-  alert(`已加入購物車：${currentProduct.name} x ${qtyInput.value || 1}`);
-  cartModal.style.display = "none";
-};
 
-// ====== 篩選功能 ======
-const filterCategory = document.getElementById("filterCategory");
-const filterPrice = document.getElementById("filterPrice");
-const applyFilterBtn = document.getElementById("applyFilter");
-
-applyFilterBtn.addEventListener("click", () => {
-  let filtered = window.loadedProducts;
-
-  const category = filterCategory.value;
-  const priceLimit = Number(filterPrice.value);
-
-  if (category !== "")
-    filtered = filtered.filter((p) => p.category === category);
-  if (priceLimit > 0) filtered = filtered.filter((p) => p.price <= priceLimit);
+  // ⭐ 新增：排序功能
+  const sortOption = document.getElementById("sortOption")?.value;
+  if (sortOption === "price_low") {
+    filtered.sort((a, b) => a.price - b.price);
+  } else if (sortOption === "price_high") {
+    filtered.sort((a, b) => b.price - a.price);
+  }
 
   renderProducts(filtered);
-});
+}
 
-// ====== 更新 Navbar 登入狀態 ======
+// 排序選單事件
+const sortSelect = document.getElementById("sortOption");
+if (sortSelect) {
+  sortSelect.addEventListener("change", applyFilters);
+}
+
+// =====================================
+//  初次載入商品
+// =====================================
+async function loadProducts() {
+  allProducts = await fetchProducts();
+  applyFilters();
+}
+
+// =====================================
+//  Navbar 使用者資訊（登入/登出）
+// =====================================
 function updateNavbarUser() {
   const userArea = document.getElementById("userArea");
   const isLoggedIn = localStorage.getItem("isLoggedIn");
   const currentUser = localStorage.getItem("currentUser");
+
   if (!userArea) return;
 
   if (isLoggedIn === "true") {
-    userArea.innerHTML = `<span>${currentUser}</span> <button id="logoutBtn">登出</button>`;
+    userArea.innerHTML = `<span>${currentUser}</span>  <button id="logoutBtn">登出</button>`;
   } else {
     userArea.innerHTML = `<a href="/login">登入</a> | <a href="/register">註冊</a>`;
   }
@@ -148,24 +112,139 @@ function updateNavbarUser() {
   }
 }
 
-// ====== Navbar導向不同頁面 ======
-// 選取 navbar dropdown 的所有 a 標籤
-document.querySelectorAll(".dropdown-menu a[data-level]").forEach((link) => {
-  link.addEventListener("click", (e) => {
+// =====================================
+//  商品 Modal
+// =====================================
+const modal = document.getElementById("productModal");
+const modalClose = document.getElementById("modalClose");
+
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("product-name")) {
+    const id = e.target.dataset.id;
+    const p = allProducts.find((x) => x.id == id);
+    if (!p) return;
+
+    document.getElementById("modalName").innerText = p.name;
+    document.getElementById("modalDesc").innerText = p.description;
+    document.getElementById("modalImg").src = p.image;
+
+    modal.style.display = "block";
+  }
+});
+
+modalClose.onclick = () => (modal.style.display = "none");
+
+// =====================================
+//  加入購物車 Modal
+// =====================================
+const cartModal = document.getElementById("cartModal");
+const cartClose = document.getElementById("cartClose");
+const qtyInput = document.getElementById("quantityInput");
+
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("addCartBtn")) {
+    const id = e.target.dataset.id;
+    currentProduct = allProducts.find((x) => x.id == id);
+    if (!currentProduct) return;
+
+    document.getElementById("cartProductName").innerText = currentProduct.name;
+    document.getElementById("cartImg").src = currentProduct.image;
+    document.getElementById("subtotal").innerText = currentProduct.price;
+    qtyInput.value = 1;
+
+    cartModal.style.display = "block";
+  }
+});
+
+cartClose.onclick = () => (cartModal.style.display = "none");
+
+// 小計更新
+qtyInput.addEventListener("input", () => {
+  if (!currentProduct) return;
+  const qty = Number(qtyInput.value) || 1;
+  document.getElementById("subtotal").innerText = (
+    qty * currentProduct.price
+  ).toFixed(2);
+});
+
+// =====================================
+//  確定加入購物車
+// =====================================
+document.getElementById("confirmAdd").onclick = async () => {
+  const qty = Number(qtyInput.value);
+  const currentUser = localStorage.getItem("currentUser");
+
+  if (!currentUser) {
+    alert("請先登入！");
+    return;
+  }
+
+  if (!currentProduct) {
+    alert("商品未選取，請重新選擇！");
+    return;
+  }
+
+  if (qty < 1) {
+    alert("數量至少為 1");
+    qtyInput.value = 1;
+    return;
+  }
+
+  if (qty > currentProduct.stock) {
+    alert(`超過庫存數量！庫存剩餘 ${currentProduct.stock} 件`);
+    qtyInput.value = currentProduct.stock;
+    return;
+  }
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/api/add_cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        account: currentUser,
+        product_id: currentProduct.id,
+        quantity: qty,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`伺服器錯誤: ${res.status}`);
+    }
+
+    const data = await res.json();
+    alert(data.message);
+    cartModal.style.display = "none";
+  } catch (err) {
+    console.error(err);
+    alert("加入購物車失敗，請稍後再試");
+  }
+};
+
+// =====================================
+//  側邊篩選
+// =====================================
+document.getElementById("applyFilter").addEventListener("click", () => {
+  currentFilters.category = document.getElementById("filterCategory").value;
+  currentFilters.price =
+    Number(document.getElementById("filterPrice").value) || 0;
+  applyFilters();
+});
+
+// =====================================
+//  Navbar Level 篩選
+// =====================================
+document.querySelectorAll(".dropdown-menu a[data-level]").forEach((a) => {
+  a.addEventListener("click", (e) => {
     e.preventDefault();
-
-    const level = link.dataset.level; // 讀取級別
-    const category = document.getElementById("filterCategory").value;
-    const priceLimit = Number(document.getElementById("filterPrice").value);
-
-    // 從全域商品抓資料
-    let filtered = window.loadedProducts;
-
-    if (level) filtered = filtered.filter((p) => p.level === level);
-    if (category) filtered = filtered.filter((p) => p.category === category);
-    if (priceLimit > 0)
-      filtered = filtered.filter((p) => p.price <= priceLimit);
-
-    renderProducts(filtered);
+    currentFilters.level = a.dataset.level || "";
+    applyFilters();
   });
+});
+
+// =====================================
+//  初始化
+// =====================================
+document.addEventListener("DOMContentLoaded", () => {
+  loadProducts();
+  updateNavbarUser();
 });

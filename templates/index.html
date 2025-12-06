@@ -15,16 +15,16 @@
             <li class="dropdown">
                 商品分類
                 <ul class="dropdown-menu">
-                    <li><a href="#" data-level="">全部</a></li>
-                    <li><a href="#" data-level="一般">一般</a></li>
-                    <li><a href="#" data-level="精淬">精淬</a></li>
+                    <li><a href="/" data-level="">全部</a></li>
+                    <li><a href="/" data-level="一般">一般</a></li>
+                    <li><a href="/" data-level="精淬">精淬</a></li>
                 </ul>
             </li>
-            <li><a href="#">購物車</a></li>
             <li class="dropdown">
                 個人專區
                 <ul class="dropdown-menu">
-                    <li><a href="#">歷史訂單</a></li>
+                    <li><a href="/cart">購物車</a></li>
+                    <li><a href="/orders">歷史訂單</a></li>
                     <li><a href="#">修改密碼</a></li>
                 </ul>
             </li>
@@ -33,14 +33,13 @@
         <div class="user-info">
             <span id="userArea"></span>
         </div>
-
     </nav>
 
     <div class="container">
 
         <!-- 🔹 篩選區域 -->
         <aside class="sidebar">
-            <h3>篩選條件</h3>
+            <h3>篩選</h3>
             <label>種類：</label>
             <select id="filterCategory">
                 <option value="">全部</option>
@@ -56,6 +55,13 @@
             <input type="number" id="filterPrice" min="0" placeholder="輸入金額">
             <br>
             <button id="applyFilter">確認</button>
+            <hr>
+            <label>排序方式：</label>
+            <select id="sortOption">
+                <option value="">— 不排序 —</option>
+                <option value="price_low">價格：低 ➝ 高</option>
+                <option value="price_high">價格：高 ➝ 低</option>
+            </select>
         </aside>
 
         <!-- 🔹 商品區 -->
@@ -80,26 +86,39 @@
 
     <!-- 🔹 商品簡介 Modal -->
     <div id="productModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content product-modal">
             <span class="close" id="modalClose">&times;</span>
-            <h2 id="modalName"></h2>
-            <img id="modalImg" style="width:100%; border-radius:10px;">
-            <p id="modalDesc"></p>
+            <!-- 商品名稱 -->
+            <h2 id="modalName" class="modal-title"></h2>
+            <div class="modal-body">
+                <!-- 左側圖片 -->
+                <img id="modalImg" class="modal-img">
+                <!-- 右側文字 -->
+                <p id="modalDesc" class="modal-desc"></p>
+            </div>
         </div>
     </div>
 
-    <!-- 🔹 加入購物車 Modal -->
+    <!-- 加入購物車 Modal -->
     <div id="cartModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content cart-modal">
             <span class="close" id="cartClose">&times;</span>
-            <h2>加入購物車</h2>
-            <p id="cartProductName"></p>
-            <label>數量：</label>
-            <input type="number" id="quantityInput" min="1" value="1">
-            <p>小計：<span id="subtotal">0</span> 元</p>
-            <button id="confirmAdd">確定加入</button>
+            <h2 class="modal-title">加入購物車</h2>
+            <div class="cart-body">
+                <!-- 左邊商品圖片 -->
+                <img id="cartImg" class="cart-img">
+                <!-- 右邊內容 -->
+                <div class="cart-info">
+                    <p class="cart-name" id="cartProductName"></p>
+                    <label>數量：</label>
+                    <input type="number" id="quantityInput" value="1" min="1">
+                    <p>小計：$<span id="subtotal">0</span></p>
+                    <button id="confirmAdd">確認加入</button>
+                </div>
+            </div>
         </div>
     </div>
+
 
     <script src="../static/js/script.js"></script>
 

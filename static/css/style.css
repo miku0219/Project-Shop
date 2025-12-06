@@ -27,10 +27,10 @@ a{
 }
 
 .logo {
-    font-size: 50px;
+    font-size: 80px;
     font-family: "LXGW WenKai TC", cursive;
     font-weight: bold;
-    color: #3a3a3a;
+    color: #a07c3b;
 }
 
 /* navbar */
@@ -44,10 +44,10 @@ a{
     background: rgba(255, 247, 230, 0.75);
     border-bottom: 4px solid #a3312d;
     padding: 15px 20px;
+    gap: 300px;
     display: flex;
-    justify-content: space-between;
     font-family: "LXGW WenKai TC", cursive;
-    font-size: 26px;
+    font-size: 30px;
     backdrop-filter: blur(4px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.25);
 }
@@ -73,13 +73,17 @@ a{
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 30px;
+    top: 45px;
     background: rgba(255, 255, 240, 0.95);
     padding: 10px;
     list-style: none;
     border: 2px solid #6b5b4b;
     border-radius: 6px;
     min-width: 120px;
+}
+
+.dropdown-menu a {
+    white-space: nowrap;
 }
 
 .dropdown-menu li {
@@ -99,7 +103,7 @@ a{
 .sidebar {
     width: 220px;
     position: fixed;      /* 固定在頁面上 */
-    top: 130px;            /* 距離頁面頂端 70px，剛好在 navbar 下方 */
+    top: 160px;            /* 距離頁面頂端 70px，剛好在 navbar 下方 */
     left: 30px;           /* 左邊間距 */
     
     background: rgba(255, 253, 238, 0.8);
@@ -110,11 +114,27 @@ a{
     backdrop-filter: blur(3px);
 
     font-family: "LXGW WenKai TC", cursive;
-    font-size: 20px;
+    font-size: 25px;
 }
 
+.sidebar select {
+    width: 100%;
+    padding: 6px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.sidebar input {
+    width: 100%;
+    padding: 6px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
 
 .sidebar h3 {
+    text-align: center;
     font-family: "LXGW WenKai TC", cursive;
     font-size: 30px;
     color: #8c6d2c;
@@ -137,9 +157,11 @@ a{
     text-align: center;
     font-family: "LXGW WenKai TC", cursive;
     font-weight: bold;
+    font-size: 20px;
 
     /* 新增 */
-    margin-top: 130px;  /* 留出 navbar 空間 */
+    margin-top: 160px;  /* 留出 navbar 空間 */
+    margin-bottom: 30px;
 }
 
 
@@ -147,7 +169,7 @@ a{
     background: linear-gradient(#8b6b3f, #6a4b26);
     color: #fff2ca;
     font-family: "LXGW WenKai TC", cursive;
-    font-size: 20px;
+    font-size: 30px;
     padding: 12px;
     letter-spacing: 1px;
 }
@@ -178,8 +200,26 @@ a{
     transform: scale(1.05);
 }
 
+/* 一般（天青色） */
+.product-name[data-level="一般"] {
+    color: #0d8ba6;
+    text-shadow: 0 0 6px rgba(150, 220, 255, 0.6);
+}
+
+/* 精淬（金色） */
+.product-name[data-level="精淬"] {
+    color: #d4a017;
+    text-shadow: 0 0 8px rgba(255, 220, 120, 0.8);
+}
+
+/* hover */
+.product-name:hover {
+    transform: scale(1.08);
+}
+
+
 /*button*/
-.addCartBtn, #logoutBtn, #confirmAdd {
+.addCartBtn, #logoutBtn, #confirmAdd, button {
     background: linear-gradient(#c89f53, #a07c3b);
     color: #fff;
     border: 2px solid #e8d49b;
@@ -199,6 +239,83 @@ a{
     transform: scale(0.92);
 }
 
+/* ============================
+    商品 Modal（圖片 + 介紹）
+============================ */
+.product-modal {
+    width: 800px;
+    padding: 25px;
+}
+
+.modal-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #8c6d2c;
+}
+
+.modal-body {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.modal-img {
+    width: 150px;
+    height: 150px;
+    border: 3px solid #c9b277;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 0 12px rgba(255, 240, 200, 0.8);
+}
+
+.modal-desc {
+    flex: 1;
+    font-size: 20px;
+    line-height: 1.5;
+    color: #4a3b20;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* =================================
+        加入購物車 Modal 版面
+================================= */
+.cart-modal {
+    width: 500px;
+    padding: 25px;
+}
+
+.cart-body {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.cart-img {
+    width: 200px;
+    height: 200px;
+    border: 3px solid #c9b277;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 0 12px rgba(255, 240, 200, 0.8);
+}
+
+.cart-info {
+    flex: 1;
+    font-size: 20px;
+    line-height: 1.6;
+    color: #4a3b20;
+}
+
+.cart-name {
+    font-size: 25px;
+    font-weight: bold;
+    color: #8c6d2c;
+    margin-bottom: 10px;
+}
+
 /*預覽*/
 .modal {
     display: none;
@@ -216,7 +333,7 @@ a{
     border: 3px solid #c9b277;
     border-radius: 10px;
     padding: 20px;
-    width: 350px;
+    width: 500px;
     margin: 12% auto;
     animation: scrollOpen 0.5s ease;
     box-shadow: 0 0 25px rgba(255,240,180,0.7);
@@ -246,7 +363,7 @@ a{
 
 /*login-register page*/
 .auth-container {
-    width: 320px;
+    width: 500px;
     margin: 150px auto;
     background: rgba(255,255,245,0.9);
     padding: 25px;
@@ -255,6 +372,7 @@ a{
     box-shadow: 0 0 20px rgba(255,240,200,0.7);
 
     font-family: "LXGW WenKai TC", cursive;
+    color: #a07c3b;
 }
 .auth-container::before{
     content: "";
@@ -266,10 +384,10 @@ a{
 .auth-container h2 {
     text-align: center;
     margin-bottom: 20px;
-    font-size: 30px;
+    font-size: 50px;
 }
 .auth-container input {
-    width: 93%;
+    width: 100%;
     padding: 10px;
     margin: 10px 0;
 }
@@ -286,3 +404,123 @@ a{
     color: #0f4c81;
     text-decoration: none;
 }
+
+/* =========================
+   Cart & Orders 專用表格
+========================= */
+.table-container {
+    width: 1500px;        
+    margin: 180px auto 50px;  
+    padding: 20px;
+    background: rgba(255, 255, 240, 0.9);
+    border: 4px solid #7c5c30;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(255, 240, 180, 0.7);
+    overflow-x: auto;
+    position: relative; /* 讓按鈕能相對定位 */
+}
+
+.table-container::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: -1;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "LXGW WenKai TC", cursive;
+    text-align: center;
+}
+
+.table-container h2 {
+    margin: 0;
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 60px;
+    color: #8c6d2c;
+    text-shadow: 0 0 7px #f5e6b3;
+}
+
+.table-container th, .table-container td {
+    padding: 12px 15px;
+}
+
+.table-container thead {
+    background: linear-gradient(to bottom, #8b6b3f, #6a4b26);
+    color: #fff2ca;
+    font-size: 22px;
+    letter-spacing: 1px;
+}
+
+.table-container tbody tr:nth-child(even) {
+    background-color: rgba(255, 245, 200, 0.3);
+}
+
+.table-container tbody tr:hover {
+    background-color: rgba(255, 230, 180, 0.5);
+    transition: 0.3s;
+}
+
+.table-container .product-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 2px solid #c3b47e;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(255, 230, 150, 0.5);
+}
+
+.deleteBtn {
+    background: linear-gradient(#c89f53, #a07c3b);
+    color: #fff;
+    border: 2px solid #e8d49b;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.deleteBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(255, 255, 200, 1);
+}
+
+.deleteBtn:active {
+    transform: scale(0.92);
+}
+
+/* 結帳按鈕 */
+.checkout-container {
+    width: 1400px;
+    margin: 0 auto 50px; /* 表格下方間距 */
+    text-align: right;   /* 右下角對齊 */
+}
+
+#checkoutBtn {
+    padding: 10px 25px;
+    font-size: 22px;
+    border-radius: 8px;
+    background: linear-gradient(#c89f53, #a07c3b);
+    color: #fff;
+    border: 2px solid #e8d49b;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#checkoutBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 255, 200, 0.9);
+}
+
+/* user info 右上角固定 */
+.user-info {
+    position: fixed;
+    top: 40px;
+    right: 30px;
+    font-size: 28px;
+    color: #0f4c81;
+    z-index: 1001;
+}
+
