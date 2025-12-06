@@ -1,77 +1,79 @@
-// 🔹 假資料，之後可改成後端提供
-const products = [
-  {
-    id: 1,
-    name: "商品 A1",
-    category: "A",
-    price: 300,
-    desc: "A1 商品介紹...",
-    img: "",
-  },
-  {
-    id: 2,
-    name: "商品 B1",
-    category: "B",
-    price: 500,
-    desc: "B1 商品介紹...",
-    img: "",
-  },
-  {
-    id: 3,
-    name: "商品 C1",
-    category: "C",
-    price: 250,
-    desc: "C1 商品介紹...",
-    img: "",
-  },
-];
+// ====== 從後端載入商品 ======
+async function fetchProducts() {
+  const res = await fetch("http://127.0.0.1:5000/api/products");
+  const data = await res.json();
+  return data;
+}
 
-const productList = document.getElementById("productList");
+// ====== 渲染商品到表格（可傳入商品陣列） ======
+function renderProducts(products) {
+  const productList = document.getElementById("productList");
+  if (!productList) return;
 
-// 🔹 渲染商品
-function loadProducts(list) {
   productList.innerHTML = "";
-  list.forEach((p) => {
+  products.forEach((p) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-            <td><img src="${p.img}" class="product-img"></td>
-            <td class="product-name" data-id="${p.id}" style="color:blue;cursor:pointer;">
-                ${p.name}
-            </td>
-            <td>${p.category}</td>
-            <td>${p.price}</td>
-            <td><button class="addCartBtn" data-id="${p.id}">加入</button></td>
-        `;
+      <td><img src="${p.image}" class="product-img"></td>
+      <td class="product-name" data-id="${p.id}" style="color:blue;cursor:pointer;">${p.name}</td>
+      <td>${p.category}</td>
+      <td>${p.stock}</td>
+      <td>$${p.price}</td>
+      <td><button class="addCartBtn" data-id="${p.id}">加入</button></td>
+    `;
     productList.appendChild(tr);
   });
 }
-loadProducts(products);
 
-/* 🔹 商品簡介 Modal */
+// ====== 載入商品（頁面初始化） ======
+async function loadProducts() {
+  const products = await fetchProducts();
+  window.loadedProducts = products; // 全域存放
+  renderProducts(products);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadProducts();
+  updateNavbarUser();
+});
+
+// ====== 商品 Modal ======
 const modal = document.getElementById("productModal");
 const modalClose = document.getElementById("modalClose");
 
 document.addEventListener("click", (e) => {
   if (e.target.classList.contains("product-name")) {
     const id = e.target.dataset.id;
-    const p = products.find((x) => x.id == id);
+    const p = window.loadedProducts.find((x) => x.id == id);
+    if (!p) return;
 
     document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalDesc").innerText = p.desc;
+    document.getElementById("modalDesc").innerText = p.description;
+    document.getElementById("modalImg").src = p.image;
+
     modal.style.display = "block";
   }
 });
 modalClose.onclick = () => (modal.style.display = "none");
 
-/* 🔹 加入購物車 Modal */
+// ====== 加入購物車 Modal ======
 const cartModal = document.getElementById("cartModal");
 const cartClose = document.getElementById("cartClose");
+
 let currentProduct = null;
 
 document.addEventListener("click", (e) => {
+  // 按下加入購物車按鈕
   if (e.target.classList.contains("addCartBtn")) {
     const id = e.target.dataset.id;
-    currentProduct = products.find((x) => x.id == id);
+
+    // ✅ 使用 window.loadedProducts
+    currentProduct = window.loadedProducts.find((x) => x.id == id);
+
+    if (!currentProduct) {
+      console.error("找不到商品：ID =", id);
+      return;
+    }
 
     document.getElementById("cartProductName").innerText = currentProduct.name;
     document.getElementById("subtotal").innerText = currentProduct.price;
@@ -80,17 +82,28 @@ document.addEventListener("click", (e) => {
   }
 });
 
+// 關閉 Modal
 cartClose.onclick = () => (cartModal.style.display = "none");
 
-// 🔹 小計更新
-document.getElementById("quantityInput").addEventListener("input", function () {
-  const qty = Number(this.value);
-  document.getElementById("subtotal").innerText = qty * currentProduct.price;
-});
+// 計算小計
+const qtyInput = document.getElementById("cartQty");
+if (qtyInput) {
+  qtyInput.addEventListener("input", () => {
+    if (!currentProduct) return;
+    const qty = Number(qtyInput.value) || 1;
+    document.getElementById("subtotal").innerText = (
+      qty * currentProduct.price
+    ).toFixed(2);
+  });
+}
 
-// 🔹 確定加入購物車（未串後端）
+// 確定加入購物車
 document.getElementById("confirmAdd").onclick = () => {
-  alert("已加入購物車！（未串後端）");
+  if (!currentProduct) {
+    alert("請先選擇商品！");
+    return;
+  }
+  alert(`已加入購物車：${currentProduct.name} x ${qtyInput.value || 1}`);
   cartModal.style.display = "none";
 };
 
@@ -100,46 +113,31 @@ const filterPrice = document.getElementById("filterPrice");
 const applyFilterBtn = document.getElementById("applyFilter");
 
 applyFilterBtn.addEventListener("click", () => {
+  let filtered = window.loadedProducts;
+
   const category = filterCategory.value;
   const priceLimit = Number(filterPrice.value);
 
-  let filtered = products;
-
-  // ▲ 依種類篩選
-  if (category !== "") {
+  if (category !== "")
     filtered = filtered.filter((p) => p.category === category);
-  }
+  if (priceLimit > 0) filtered = filtered.filter((p) => p.price <= priceLimit);
 
-  // ▲ 依價格篩選
-  if (priceLimit > 0) {
-    filtered = filtered.filter((p) => p.price <= priceLimit);
-  }
-
-  // ▲ 渲染結果
-  loadProducts(filtered);
+  renderProducts(filtered);
 });
 
-// ====== 首頁：判斷登入狀態 ======
+// ====== 更新 Navbar 登入狀態 ======
 function updateNavbarUser() {
   const userArea = document.getElementById("userArea");
   const isLoggedIn = localStorage.getItem("isLoggedIn");
   const currentUser = localStorage.getItem("currentUser");
-
   if (!userArea) return;
 
   if (isLoggedIn === "true") {
-    userArea.innerHTML = `
-            <span>${currentUser}</span>
-            <button id="logoutBtn">登出</button>
-        `;
+    userArea.innerHTML = `<span>${currentUser}</span> <button id="logoutBtn">登出</button>`;
   } else {
-    userArea.innerHTML = `
-            <a href="/login">登入</a> |
-            <a href="/register">註冊</a>
-        `;
+    userArea.innerHTML = `<a href="/login">登入</a> | <a href="/register">註冊</a>`;
   }
 
-  // 登出功能
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
@@ -150,4 +148,24 @@ function updateNavbarUser() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", updateNavbarUser);
+// ====== Navbar導向不同頁面 ======
+// 選取 navbar dropdown 的所有 a 標籤
+document.querySelectorAll(".dropdown-menu a[data-level]").forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const level = link.dataset.level; // 讀取級別
+    const category = document.getElementById("filterCategory").value;
+    const priceLimit = Number(document.getElementById("filterPrice").value);
+
+    // 從全域商品抓資料
+    let filtered = window.loadedProducts;
+
+    if (level) filtered = filtered.filter((p) => p.level === level);
+    if (category) filtered = filtered.filter((p) => p.category === category);
+    if (priceLimit > 0)
+      filtered = filtered.filter((p) => p.price <= priceLimit);
+
+    renderProducts(filtered);
+  });
+});

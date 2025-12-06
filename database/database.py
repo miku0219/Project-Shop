@@ -20,6 +20,43 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+    
+    init_product_table()
+    init_cart_table()
+    
+def init_product_table():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS product (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            image TEXT,
+            level TEXT,
+            category TEXT,
+            price REAL,
+            stock INTEGER,
+            description TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def init_cart_table():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS cart (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            account TEXT NOT NULL,
+            product_id INTEGER,
+            quantity INTEGER,
+            FOREIGN KEY(product_id) REFERENCES product(id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
 
 # ====== 新增使用者 ======
 def add_user(account, password):
@@ -46,3 +83,39 @@ def check_user(account, password):
 
     return {"success": False, "message": "帳號或密碼錯誤"}
 
+#====== 讀取商品 ======
+def get_all_products():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, image, level, category, price, stock, description FROM product")
+    rows = cursor.fetchall()
+    conn.close()
+
+    # 轉成 JSON 格式
+    products = []
+    for r in rows:
+        products.append({
+            "id": r[0],
+            "name": r[1],
+            "image": r[2],
+            "level": r[3],
+            "category": r[4],
+            "price": r[5],
+            "stock": r[6],
+            "description": r[7]
+        })
+    return products
+
+#====== 加入購物車 ======
+def add_cart(account, product_id, quantity):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO cart (account, product_id, quantity)
+        VALUES (?, ?, ?)
+    ''', (account, product_id, quantity))
+
+    conn.commit()
+    conn.close()
+    return {"success": True, "message": "加入購物車成功"}

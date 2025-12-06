@@ -15,9 +15,9 @@
             <li class="dropdown">
                 商品分類
                 <ul class="dropdown-menu">
-                    <li><a href="#">分類 A</a></li>
-                    <li><a href="#">分類 B</a></li>
-                    <li><a href="#">分類 C</a></li>
+                    <li><a href="#" data-level="">全部</a></li>
+                    <li><a href="#" data-level="一般">一般</a></li>
+                    <li><a href="#" data-level="精淬">精淬</a></li>
                 </ul>
             </li>
             <li><a href="#">購物車</a></li>
@@ -44,13 +44,16 @@
             <label>種類：</label>
             <select id="filterCategory">
                 <option value="">全部</option>
-                <option value="A">A 類</option>
-                <option value="B">B 類</option>
-                <option value="C">C 類</option>
+                <option value="本草方劑">本草方劑</option>
+                <option value="遊方巧器">遊方巧器</option>
+                <option value="器引百味">器引百味</option>
+                <option value="虛室坐修">虛室坐修</option>
+                <option value="素裳嶽履">素裳嶽履</option>
+                <option value="節禮賀幛">節禮賀幛</option>
             </select>
             <br>
             <label>價格上限：</label>
-            <input type="number" id="filterPrice" placeholder="輸入金額">
+            <input type="number" id="filterPrice" min="0" placeholder="輸入金額">
             <br>
             <button id="applyFilter">確認</button>
         </aside>
@@ -60,8 +63,10 @@
             <table class="product-table">
                 <thead>
                     <tr>
-                        <th colspan="2">名稱</th>
+                        <th></th>
+                        <th>名稱</th>
                         <th>種類</th>
+                        <th>庫存</th>
                         <th>價格</th>
                         <th></th>
                     </tr>
@@ -78,6 +83,7 @@
         <div class="modal-content">
             <span class="close" id="modalClose">&times;</span>
             <h2 id="modalName"></h2>
+            <img id="modalImg" style="width:100%; border-radius:10px;">
             <p id="modalDesc"></p>
         </div>
     </div>
