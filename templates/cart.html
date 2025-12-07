@@ -38,21 +38,22 @@
             <table>
                 <thead>
                     <tr>
-                        <th></th>
-                        <th>名稱</th>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th colspan="2">名稱</th>
                         <th>價格</th>
                         <th>數量</th>
                         <th>小計</th>
-                        <th>操作</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="cartList">
                     <!-- JS 動態生成 -->
                 </tbody>
             </table>
-            
         </div>
+
         <div class="checkout-container">
+            <span id="totalAmount">總計: $0</span>
             <button id="checkoutBtn">結帳</button>
         </div>
 

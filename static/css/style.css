@@ -491,6 +491,29 @@ a{
     transform: scale(0.92);
 }
 
+.item-checkbox, #selectAll{
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    margin: 0;
+    border-radius: 5px;
+    accent-color: #ddac53; 
+}
+
+.item-checkbox:checked, #selectAll:checked{
+    background-color: #ddac53;
+    border-color: #ddac53;
+}
+
+#totalAmount {
+    margin: 0;
+    margin-right: 20px;
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 40px;
+    color: #8c6d2c;
+    text-shadow: 0 0 7px #f5e6b3;
+}
+
 /* 結帳按鈕 */
 .checkout-container {
     width: 1400px;

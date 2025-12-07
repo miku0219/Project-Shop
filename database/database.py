@@ -167,33 +167,27 @@ def delete_cart_item(cart_id, account):
     return {"success": True, "message": "已刪除購物車項目"}
 
 # ====== 結帳 ======
-def checkout_cart(account):
+def checkout_cart(account, selected_items):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     taiwan_time = get_taiwan_time()
 
-    cursor.execute("""
-        SELECT c.product_id, c.quantity, p.price
-        FROM cart c
-        JOIN product p ON c.product_id = p.id
-        WHERE c.account=?
-    """, (account,))
-    items = cursor.fetchall()
+    for product_id, quantity in selected_items:
+        cursor.execute("SELECT price FROM product WHERE id=?", (product_id,))
+        row = cursor.fetchone()
+        if row:
+            price = row[0]
+            cursor.execute(
+                "INSERT INTO orders (account, product_id, quantity, price, checkout_time) VALUES (?, ?, ?, ?, ?)",
+                (account, product_id, quantity, price, taiwan_time)
+            )
+            # 刪除已結帳的商品
+            cursor.execute("DELETE FROM cart WHERE account=? AND product_id=?", (account, product_id))
 
-    if not items:
-        conn.close()
-        return {"success": False, "message": "購物車為空"}
-
-    for product_id, quantity, price in items:
-        cursor.execute("""
-            INSERT INTO orders (account, product_id, quantity, price, checkout_time)
-            VALUES (?, ?, ?, ?, ?)
-        """, (account, product_id, quantity, price, taiwan_time))
-
-    cursor.execute("DELETE FROM cart WHERE account=?", (account,))
     conn.commit()
     conn.close()
     return {"success": True, "message": "結帳成功"}
+
 
 # ====== 歷史訂單 ======
 def get_orders(account):

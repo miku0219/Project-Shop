@@ -117,11 +117,17 @@ def api_delete_cart(cart_id):
 def api_checkout():
     data = request.get_json()
     account = data.get("account")
+    selected_items = data.get("selected_items", [])
+
     if not account:
         return jsonify({"success": False, "message": "請先登入"}), 401
+    if not selected_items:
+        return jsonify({"success": False, "message": "未選擇商品"}), 400
 
-    res = checkout_cart(account)
+    from database.database import checkout_cart
+    res = checkout_cart(account, selected_items)
     return jsonify(res)
+
 
 
 # 歷史訂單
