@@ -101,7 +101,7 @@ a{
 
 /*select area*/
 .sidebar {
-    width: 220px;
+    width: 240px;
     position: fixed;      /* 固定在頁面上 */
     top: 160px;            /* 距離頁面頂端 70px，剛好在 navbar 下方 */
     left: 30px;           /* 左邊間距 */
@@ -122,7 +122,7 @@ a{
     padding: 6px;
     margin-top: 5px;
     margin-bottom: 10px;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .sidebar input {
@@ -136,7 +136,7 @@ a{
 .sidebar h3 {
     text-align: center;
     font-family: "LXGW WenKai TC", cursive;
-    font-size: 30px;
+    font-size: 36px;
     color: #8c6d2c;
     text-shadow: 0 0 7px #f5e6b3;
 }
@@ -157,7 +157,7 @@ a{
     text-align: center;
     font-family: "LXGW WenKai TC", cursive;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 25px;
 
     /* 新增 */
     margin-top: 160px;  /* 留出 navbar 空間 */
@@ -340,6 +340,12 @@ a{
     position: relative;
 }
 
+#quantityInput {
+    width: 100px;
+    text-align: center;
+    font-size: 20px;
+}
+
 .close {
     position: absolute;
     top: 8px;       /* 上方距離 */
@@ -433,6 +439,8 @@ a{
     border-collapse: collapse;
     font-family: "LXGW WenKai TC", cursive;
     text-align: center;
+    font-size: 25px;
+    font-weight: bolder;
 }
 
 .table-container h2 {
@@ -470,6 +478,13 @@ a{
     border: 2px solid #c3b47e;
     border-radius: 6px;
     box-shadow: 0 0 10px rgba(255, 230, 150, 0.5);
+}
+
+.table-container input {
+    font-family: "LXGW WenKai TC", cursive;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bolder;
 }
 
 .deleteBtn {
@@ -516,9 +531,31 @@ a{
 
 /* 結帳按鈕 */
 .checkout-container {
-    width: 1400px;
-    margin: 0 auto 50px; /* 表格下方間距 */
-    text-align: right;   /* 右下角對齊 */
+    position: fixed;       /* 懸浮 */
+    bottom: 0;             /* 固定在視窗底部 */
+    left: 0;
+    width: 100%;           /* 全寬 */
+    background: rgba(255, 247, 230, 0.95); /* 半透明背景，和 navbar 一致 */
+    border-top: 4px solid #a3312d;          /* 和 navbar 底部線相呼應 */
+    padding: 15px 30px;
+    text-align: right;     /* 右對齊 */
+    font-family: "LXGW WenKai TC", cursive;
+    font-size: 30px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.25);
+    z-index: 1000;         /* 在大部分元素之上 */
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+/* 調整總計文字和按鈕 */
+#totalAmount {
+    font-size: 40px;
+    color: #8c6d2c;
+    text-shadow: 0 0 7px #f5e6b3;
+    margin: 0;
+    align-self: center;
 }
 
 #checkoutBtn {
@@ -536,6 +573,12 @@ a{
     transform: scale(1.05);
     box-shadow: 0 0 15px rgba(255, 255, 200, 0.9);
 }
+
+/* 表格容器避免被 checkout 擋住 */
+.table-container {
+    margin-bottom: 120px;  /* 預留底部空間給懸浮的 checkout-container */
+}
+
 
 /* user info 右上角固定 */
 .user-info {

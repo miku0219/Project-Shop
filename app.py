@@ -9,7 +9,8 @@ from database.database import (
     delete_cart_item,
     checkout_cart,
     get_orders,
-    delete_order
+    delete_order,
+    get_max_price
 )
 
 app = Flask(__name__, static_folder="static")
@@ -74,6 +75,11 @@ def api_get_products():
     products = get_all_products()
     return jsonify(products)
 
+# 取得最貴商品價格
+@app.route("/api/max_price", methods=["GET"])
+def api_max_price():
+    max_price = get_max_price()
+    return jsonify({"max_price": max_price})
 
 # 加入購物車
 @app.route("/api/add_cart", methods=["POST"])
@@ -123,8 +129,7 @@ def api_checkout():
         return jsonify({"success": False, "message": "請先登入"}), 401
     if not selected_items:
         return jsonify({"success": False, "message": "未選擇商品"}), 400
-
-    from database.database import checkout_cart
+    
     res = checkout_cart(account, selected_items)
     return jsonify(res)
 

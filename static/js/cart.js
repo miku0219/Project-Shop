@@ -8,18 +8,39 @@ let cartData = [];
 
 // 計算總額（只計算勾選商品）
 function calculateTotal() {
-  const checkboxes = document.querySelectorAll(".item-checkbox");
   let total = 0;
-  checkboxes.forEach((cb) => {
-    if (cb.checked) total += parseFloat(cb.dataset.subtotal) || 0;
+  document.querySelectorAll(".item-checkbox").forEach((cb) => {
+    if (cb.checked) {
+      total += parseFloat(cb.dataset.subtotal) || 0;
+    }
   });
+
   document.getElementById("totalAmount").innerText = `總計: $${total.toFixed(
     2
   )}`;
 }
 
-// 單品勾選事件
-function onItemCheckboxChange() {
+// 單品 checkbox 切換事件（自動處理數量 & 小計）
+function onItemCheckboxChange(e) {
+  const cb = e.target;
+  const row = cb.closest("tr");
+  const qtyInput = row.querySelector(".buy-qty");
+  const subtotalSpan = row.querySelector(".subtotal");
+  const price = parseFloat(qtyInput.dataset.price);
+
+  if (cb.checked) {
+    qtyInput.disabled = false;
+    qtyInput.value = 1;
+    const subtotal = price * 1;
+    subtotalSpan.innerText = subtotal.toFixed(2);
+    cb.dataset.subtotal = subtotal;
+  } else {
+    qtyInput.disabled = true;
+    qtyInput.value = 0;
+    subtotalSpan.innerText = "0.00";
+    cb.dataset.subtotal = 0;
+  }
+
   calculateTotal();
   updateSelectAllStatus();
 }
@@ -32,19 +53,20 @@ function updateSelectAllStatus() {
 
   const allChecked =
     checkboxes.length > 0 && Array.from(checkboxes).every((cb) => cb.checked);
-  selectAll.checked = allChecked; // 只有全部勾選才勾全選框
+  selectAll.checked = allChecked;
 }
 
-// 全選框勾選或取消事件
+// 全選框事件
 function onSelectAllChange(e) {
   const checked = e.target.checked;
-  document
-    .querySelectorAll(".item-checkbox")
-    .forEach((cb) => (cb.checked = checked));
-  calculateTotal();
+
+  document.querySelectorAll(".item-checkbox").forEach((cb) => {
+    cb.checked = checked;
+    cb.dispatchEvent(new Event("change")); // 讓每個 checkbox 自動執行數量處理
+  });
 }
 
-// 綁定全選框事件
+// 綁定全選框
 function bindSelectAll() {
   const selectAll = document.getElementById("selectAll");
   if (selectAll && !selectAll.dataset.bound) {
@@ -66,38 +88,74 @@ async function loadCart() {
 
   if (!data || data.length === 0) {
     cartList.innerHTML =
-      '<tr><td colspan="7" style="font-size: 40px; color:#dec381; text-align:center;">購物車目前沒有商品</td></tr>';
+      '<tr><td colspan="8" style="font-size: 40px; color:#dec381; text-align:center;">購物車目前沒有商品</td></tr>';
     calculateTotal();
-    const selectAll = document.getElementById("selectAll");
-    if (selectAll) selectAll.checked = false;
     return;
   }
 
   data.forEach((item) => {
-    const subtotal = parseFloat(item.subtotal) || 0;
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td><input type="checkbox" class="item-checkbox"
-                 data-cart-id="${item.cart_id}"
                  data-product-id="${item.product_id}"
-                 data-quantity="${item.quantity}"
-                 data-subtotal="${subtotal}"></td>
+                 data-subtotal="0"></td>
+
       <td><img src="${item.image}" class="product-img"></td>
-      <td>${item.name}</td>
+
+      <td class="product-name" data-level="${item.level}">
+          ${item.name}
+      </td>
+
       <td>$${item.price}</td>
+
       <td>${item.quantity}</td>
-      <td>$${subtotal.toFixed(2)}</td>
+
+      <td>
+        <input type="number" 
+               class="buy-qty"
+               min="1" 
+               max="${item.quantity}"
+               value="0"
+               disabled
+               data-price="${item.price}">
+      </td>
+
+      <td>$<span class="subtotal">0.00</span></td>
+
       <td><button class="deleteBtn" data-id="${item.cart_id}">刪除</button></td>
     `;
     cartList.appendChild(tr);
   });
 
-  // 綁定單品勾選事件
+  // 數量變動：更新小計
+  document.querySelectorAll(".buy-qty").forEach((input) => {
+    input.addEventListener("input", (e) => {
+      let qty = parseInt(e.target.value);
+      const price = parseFloat(e.target.dataset.price);
+
+      if (qty < 1) qty = 1;
+      if (qty > parseInt(e.target.max)) qty = parseInt(e.target.max);
+      e.target.value = qty;
+
+      const newSubtotal = qty * price;
+
+      const row = e.target.closest("tr");
+      row.querySelector(".subtotal").innerText = newSubtotal.toFixed(2);
+
+      // 更新 checkbox subtotal
+      const checkbox = row.querySelector(".item-checkbox");
+      checkbox.dataset.subtotal = newSubtotal;
+
+      calculateTotal();
+    });
+  });
+
+  // checkbox 事件
   document
     .querySelectorAll(".item-checkbox")
     .forEach((cb) => cb.addEventListener("change", onItemCheckboxChange));
 
-  // 綁定刪除按鈕
+  // 刪除
   document.querySelectorAll(".deleteBtn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       await fetch(
@@ -108,7 +166,6 @@ async function loadCart() {
     });
   });
 
-  // 初始更新全選框狀態與總額
   calculateTotal();
   updateSelectAllStatus();
 }
@@ -116,12 +173,14 @@ async function loadCart() {
 // 結帳
 document.getElementById("checkoutBtn").addEventListener("click", async () => {
   const selectedItems = [];
+
   document.querySelectorAll(".item-checkbox").forEach((cb) => {
-    if (cb.checked)
-      selectedItems.push([
-        parseInt(cb.dataset.productId),
-        parseInt(cb.dataset.quantity),
-      ]);
+    if (cb.checked) {
+      const row = cb.closest("tr");
+      const qty = parseInt(row.querySelector(".buy-qty").value);
+
+      selectedItems.push([parseInt(cb.dataset.productId), qty]);
+    }
   });
 
   if (selectedItems.length === 0) {

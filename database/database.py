@@ -115,6 +115,15 @@ def get_all_products():
     conn.close()
     return [dict(zip(["id","name","image","level","category","price","stock","description"], r)) for r in rows]
 
+# ====== 取得商品最高價格 ======
+def get_max_price():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT MAX(price) FROM product")
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row and row[0] is not None else 0
+
 # ====== 購物車機制 ======
 def add_cart(account, product_id, quantity):
     conn = sqlite3.connect(DB_PATH)
@@ -148,15 +157,25 @@ def get_cart(account):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT c.id, c.product_id, c.quantity, p.name, p.image, p.price,
-               (c.quantity * p.price)
+        SELECT 
+            c.id, 
+            c.product_id, 
+            c.quantity, 
+            p.name, 
+            p.image, 
+            p.price,
+            (c.quantity * p.price),
+            p.level
         FROM cart c
         JOIN product p ON c.product_id = p.id
         WHERE c.account=?
     """, (account,))
     rows = cursor.fetchall()
     conn.close()
-    return [dict(zip(["cart_id","product_id","quantity","name","image","price","subtotal"], r)) for r in rows]
+    return [dict(zip([
+        "cart_id","product_id","quantity",
+        "name","image","price","subtotal","level"
+    ], r)) for r in rows]
 
 def delete_cart_item(cart_id, account):
     conn = sqlite3.connect(DB_PATH)

@@ -51,8 +51,8 @@
                 <option value="節禮賀幛">節禮賀幛</option>
             </select>
             <br>
-            <label>價格上限：</label>
-            <input type="number" id="filterPrice" min="0" placeholder="輸入金額">
+            <label>價格上限：$<span id="priceDisplay">0</span></label>
+            <input type="range" id="filterPrice" min="0" max="1000" step="1" value="1000">
             <br>
             <button id="applyFilter">確認</button>
             <hr>
@@ -88,37 +88,35 @@
     <div id="productModal" class="modal">
         <div class="modal-content product-modal">
             <span class="close" id="modalClose">&times;</span>
-            <!-- 商品名稱 -->
             <h2 id="modalName" class="modal-title"></h2>
             <div class="modal-body">
-                <!-- 左側圖片 -->
                 <img id="modalImg" class="modal-img">
-                <!-- 右側文字 -->
                 <p id="modalDesc" class="modal-desc"></p>
             </div>
         </div>
     </div>
 
-    <!-- 加入購物車 Modal -->
+    <!-- 🔹 加入購物車 Modal -->
     <div id="cartModal" class="modal">
         <div class="modal-content cart-modal">
             <span class="close" id="cartClose">&times;</span>
             <h2 class="modal-title">加入購物車</h2>
             <div class="cart-body">
-                <!-- 左邊商品圖片 -->
                 <img id="cartImg" class="cart-img">
-                <!-- 右邊內容 -->
                 <div class="cart-info">
                     <p class="cart-name" id="cartProductName"></p>
                     <label>數量：</label>
-                    <input type="number" id="quantityInput" value="1" min="1">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button type="button" id="btnDecrease">−</button>
+                        <input type="number" id="quantityInput" value="1" min="1">
+                        <button type="button" id="btnIncrease">+</button>
+                    </div>
                     <p>小計：$<span id="subtotal">0</span></p>
                     <button id="confirmAdd">確認加入</button>
                 </div>
             </div>
         </div>
     </div>
-
 
     <script src="../static/js/script.js"></script>
 
