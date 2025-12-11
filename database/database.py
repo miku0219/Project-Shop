@@ -126,6 +126,9 @@ def get_max_price():
 
 # ====== 購物車機制 ======
 def add_cart(account, product_id, quantity):
+
+    quantity = int(quantity)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     taiwan_time = get_taiwan_time()
