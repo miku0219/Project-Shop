@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 from database.database import (
     add_user,
     check_user,
@@ -13,6 +14,7 @@ from database.database import (
 )
 
 app = Flask(__name__, static_folder="static")
+CORS(app)
 
 # ==========================================
 #                 頁面路由
@@ -130,6 +132,7 @@ def api_checkout():
     
     res = checkout_cart(account, selected_items)
     return jsonify(res)
+
 
 
 # 歷史訂單
