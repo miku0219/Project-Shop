@@ -5,9 +5,7 @@ if (!currentUser) {
 }
 
 async function loadOrders() {
-  const res = await fetch(
-    `http://127.0.0.1:5000/api/orders?account=${currentUser}`
-  );
+  const res = await fetch(`/api/orders?account=${currentUser}`);
   const orders = await res.json();
   const ordersList = document.getElementById("ordersList");
   ordersList.innerHTML = "";
@@ -52,10 +50,9 @@ async function loadOrders() {
       const order_id = btn.dataset.id;
       if (!confirm("確定要刪除此筆訂單紀錄嗎？")) return;
 
-      await fetch(
-        `http://127.0.0.1:5000/api/orders/${order_id}?account=${currentUser}`,
-        { method: "DELETE" }
-      );
+      await fetch(`/api/orders/${order_id}?account=${currentUser}`, {
+        method: "DELETE",
+      });
 
       loadOrders(); // 刪除後重新載入
     });

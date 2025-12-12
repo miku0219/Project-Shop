@@ -9,7 +9,7 @@ let currentProduct = null;
 // 取得商品資料
 // =====================================
 async function fetchProducts() {
-  const res = await fetch("http://127.0.0.1:5000/api/products");
+  const res = await fetch("/api/products");
   return await res.json();
 }
 
@@ -18,7 +18,7 @@ async function fetchProducts() {
 // =====================================
 async function fetchMaxPrice() {
   try {
-    const res = await fetch("http://127.0.0.1:5000/api/max_price");
+    const res = await fetch("/api/max_price");
     const data = await res.json();
     return data.max_price || 1000;
   } catch (err) {
@@ -205,7 +205,7 @@ document.getElementById("confirmAdd").onclick = async () => {
   }
 
   try {
-    const res = await fetch("http://127.0.0.1:5000/api/add_cart", {
+    const res = await fetch("/api/add_cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

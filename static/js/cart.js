@@ -77,9 +77,7 @@ function bindSelectAll() {
 
 // 載入購物車
 async function loadCart() {
-  const res = await fetch(
-    `http://127.0.0.1:5000/api/cart?account=${currentUser}`
-  );
+  const res = await fetch(`/api/cart?account=${currentUser}`);
   const data = await res.json();
   cartData = data;
 
@@ -158,10 +156,9 @@ async function loadCart() {
   // 刪除
   document.querySelectorAll(".deleteBtn").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      await fetch(
-        `http://127.0.0.1:5000/api/cart/${btn.dataset.id}?account=${currentUser}`,
-        { method: "DELETE" }
-      );
+      await fetch(`/api/cart/${btn.dataset.id}?account=${currentUser}`, {
+        method: "DELETE",
+      });
       loadCart();
     });
   });
@@ -188,7 +185,7 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
     return;
   }
 
-  const res = await fetch("http://127.0.0.1:5000/api/checkout", {
+  const res = await fetch("/api/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
