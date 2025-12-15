@@ -169,9 +169,7 @@ function updateSubtotal() {
   if (qty > currentProduct.stock) qty = currentProduct.stock;
   if (qty < 1) qty = 1;
   qtyInput.value = qty;
-  document.getElementById("subtotal").innerText = (
-    qty * currentProduct.price
-  ).toFixed(2);
+  document.getElementById("subtotal").innerText = qty * currentProduct.price;
 }
 
 qtyInput.addEventListener("input", updateSubtotal);
@@ -200,12 +198,14 @@ document.getElementById("confirmAdd").onclick = async () => {
     return;
   }
 
+  // 雖然後端有庫存檢查，但前端也做一次提醒，避免使用者體驗不佳
   if (qty > currentProduct.stock) {
     alert(`數量已自動調整至庫存上限 ${currentProduct.stock}`);
   }
 
   try {
-    const res = await fetch("/api/add_cart", {
+    // 【重要修改】將 /api/add_cart 改為 /api/cart
+    const res = await fetch("/api/cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -215,13 +215,30 @@ document.getElementById("confirmAdd").onclick = async () => {
       }),
     });
 
-    if (!res.ok) throw new Error(`伺服器錯誤: ${res.status}`);
+    if (!res.ok) {
+      // 嘗試解析錯誤訊息
+      const errorData = await res.json();
+      throw new Error(errorData.message || `伺服器錯誤: ${res.status}`);
+    }
+
     const data = await res.json();
-    alert(data.message);
+
+    // 修正：如果後端回傳 success: false，也應該顯示其 message
+    if (data.success === false) {
+      alert(data.message);
+    } else {
+      alert(data.message);
+      cartModal.style.display = "none";
+    }
+
+    // 重新載入商品列表以刷新庫存資訊（雖然在這個頁面上不需要，但這是好習慣）
+    // loadProducts(); // 可選，但此頁面沒有顯示庫存變動，故暫不執行
+
     cartModal.style.display = "none";
   } catch (err) {
     console.error(err);
-    alert("加入購物車失敗");
+    // 顯示來自後端的錯誤訊息
+    alert(err.message || "加入購物車失敗");
   }
 };
 
