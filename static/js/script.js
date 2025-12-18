@@ -9,7 +9,8 @@ let currentProduct = null;
 // 取得商品資料
 // =====================================
 async function fetchProducts() {
-  const res = await fetch("/api/products");
+  const currentUser = localStorage.getItem("currentGmail") || "";
+  const res = await fetch(`/api/products?gmail=${currentUser}`);
   return await res.json();
 }
 
@@ -19,16 +20,21 @@ async function fetchProducts() {
 async function fetchMaxPrice() {
   try {
     const res = await fetch("/api/max_price");
+    if (!res.ok) throw new Error("網路回應不正常");
+
     const data = await res.json();
-    return data.max_price || 1000;
+
+    // 確保回傳值是數字，且若 API 失敗則給予保底值
+    const price = Number(data.max_price);
+    return isNaN(price) ? 2000 : price;
   } catch (err) {
-    console.error("取得最大價格失敗:", err);
-    return 1000;
+    console.warn("無法取得資料庫最高價，使用預設值 2000:", err);
+    return 2000;
   }
 }
 
 // =====================================
-// 渲染商品
+// 渲染商品表格
 // =====================================
 function renderProducts(products) {
   const productList = document.getElementById("productList");
@@ -39,11 +45,15 @@ function renderProducts(products) {
   products.forEach((p) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><img src="${p.image}" class="product-img"></td>
-      <td class="product-name" data-id="${p.id}" data-level="${p.level}">${p.name}</td>
+      <td><img src="${
+        p.image
+      }" class="product-img" style="width:150px; height:150px; object-fit:cover;"></td>
+      <td class="product-name" data-id="${p.id}" data-level="${p.level}">${
+      p.name
+    }</td>
       <td>${p.category}</td>
-      <td>${p.stock}</td>
-      <td>$${p.price}</td>
+      <td>${p.stock}</td> 
+      <td>$${Math.round(p.price)}</td> 
       <td><button class="addCartBtn" data-id="${p.id}">加入</button></td>
     `;
     productList.appendChild(tr);
@@ -75,48 +85,56 @@ function applyFilters() {
 // 初次載入商品
 // =====================================
 async function loadProducts() {
+  // 1. 先取得最高價
   const maxPrice = await fetchMaxPrice();
+
+  // 2. 更新 UI 滑桿
   const filterPrice = document.getElementById("filterPrice");
+  const priceDisplay = document.getElementById("priceDisplay");
+
   if (filterPrice) {
-    filterPrice.max = maxPrice;
-    filterPrice.value = maxPrice;
-    const priceDisplay = document.getElementById("priceDisplay");
-    if (priceDisplay) priceDisplay.innerText = maxPrice;
+    filterPrice.max = maxPrice; // 動態設定滑桿最大值
+
+    // 如果是第一次載入，將滑桿拉到最右邊（顯示全部商品）
+    if (currentFilters.price === 0) {
+      filterPrice.value = maxPrice;
+      currentFilters.price = maxPrice;
+    }
+
+    if (priceDisplay) {
+      priceDisplay.innerText = filterPrice.value;
+    }
   }
 
+  // 3. 載入商品資料
   allProducts = await fetchProducts();
-  currentFilters.price = Number(filterPrice.value) || 0;
   applyFilters();
 }
-
 // =====================================
-// Navbar 使用者資訊
+// Navbar 使用者資訊 (與 auth.js 邏輯同步)
 // =====================================
 function updateNavbarUser() {
   const userArea = document.getElementById("userArea");
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
-  const currentUser = localStorage.getItem("currentUser");
-
+  const name = localStorage.getItem("currentName"); // 統一使用 currentName
   if (!userArea) return;
 
-  if (isLoggedIn === "true") {
-    userArea.innerHTML = `<span>${currentUser}</span> <button id="logoutBtn">登出</button>`;
+  if (name && name !== "undefined") {
+    userArea.innerHTML = `
+            <span style="color:#a57c14ff; margin-right:10px;">歡迎，${name}</span>
+            <button onclick="logout()" class="logout-btn">登出</button>
+        `;
   } else {
-    userArea.innerHTML = `<a href="/login">登入</a> | <a href="/register">註冊</a>`;
-  }
-
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      localStorage.setItem("isLoggedIn", "false");
-      localStorage.removeItem("currentUser");
-      window.location.reload();
-    });
+    userArea.innerHTML = `<a href="/login" style="text-decoration: none; color: inherit;">登入 / 註冊</a>`;
   }
 }
 
+function logout() {
+  localStorage.clear();
+  location.href = "/";
+}
+
 // =====================================
-// 商品 Modal
+// 商品詳情 Modal 邏輯
 // =====================================
 const modal = document.getElementById("productModal");
 const modalClose = document.getElementById("modalClose");
@@ -127,16 +145,16 @@ document.addEventListener("click", (e) => {
     const p = allProducts.find((x) => x.id == id);
     if (!p) return;
     document.getElementById("modalName").innerText = p.name;
-    document.getElementById("modalDesc").innerText = p.description;
+    document.getElementById("modalDesc").innerText =
+      p.description || "暫無描述";
     document.getElementById("modalImg").src = p.image;
     modal.style.display = "block";
   }
 });
-
-modalClose.onclick = () => (modal.style.display = "none");
+if (modalClose) modalClose.onclick = () => (modal.style.display = "none");
 
 // =====================================
-// 加入購物車 Modal
+// 加入購物車 Modal 與數量邏輯
 // =====================================
 const cartModal = document.getElementById("cartModal");
 const cartClose = document.getElementById("cartClose");
@@ -148,113 +166,102 @@ document.addEventListener("click", (e) => {
     currentProduct = allProducts.find((x) => x.id == id);
     if (!currentProduct) return;
 
+    // 關鍵修正：將 ID 存入 Modal 供後續確認按鈕讀取
+    cartModal.dataset.productId = id;
+
     document.getElementById("cartProductName").innerText = currentProduct.name;
     document.getElementById("cartImg").src = currentProduct.image;
-
     qtyInput.value = 1;
-    document.getElementById("subtotal").innerText = currentProduct.price;
-
+    document.getElementById("subtotal").innerText = Math.round(
+      currentProduct.price
+    );
     cartModal.style.display = "block";
   }
 });
 
-cartClose.onclick = () => (cartModal.style.display = "none");
-
-// =====================================
-// 小計更新 + 庫存限制
-// =====================================
 function updateSubtotal() {
   if (!currentProduct) return;
   let qty = Number(qtyInput.value) || 1;
-  if (qty > currentProduct.stock) qty = currentProduct.stock;
   if (qty < 1) qty = 1;
+  // 如果有庫存限制可開啟此行：if (qty > currentProduct.stock) qty = currentProduct.stock;
   qtyInput.value = qty;
-  document.getElementById("subtotal").innerText = qty * currentProduct.price;
+  document.getElementById("subtotal").innerText = Math.round(
+    qty * currentProduct.price
+  );
 }
 
-qtyInput.addEventListener("input", updateSubtotal);
+if (qtyInput) qtyInput.addEventListener("input", updateSubtotal);
 document.getElementById("btnDecrease")?.addEventListener("click", () => {
-  qtyInput.value = Number(qtyInput.value) - 1;
-  updateSubtotal();
+  if (qtyInput.value > 1) {
+    qtyInput.value--;
+    updateSubtotal();
+  }
 });
 document.getElementById("btnIncrease")?.addEventListener("click", () => {
-  qtyInput.value = Number(qtyInput.value) + 1;
+  qtyInput.value++;
   updateSubtotal();
 });
 
+if (cartClose) cartClose.onclick = () => (cartModal.style.display = "none");
+
 // =====================================
-// 確定加入購物車
+// 確定加入購物車 (發送到後端)
 // =====================================
 document.getElementById("confirmAdd").onclick = async () => {
-  if (!currentProduct) {
-    alert("商品未選取！");
+  const gmail = localStorage.getItem("currentGmail");
+  if (!gmail) {
+    alert("請先登入");
+    window.location.href = "/login";
     return;
   }
 
-  const qty = Number(qtyInput.value);
-  const currentUser = localStorage.getItem("currentUser");
-  if (!currentUser) {
-    alert("請先登入！");
-    return;
-  }
+  // 從 Modal 的 dataset 讀取剛才存入的 productId
+  const productId = cartModal.dataset.productId;
+  const quantity = parseInt(qtyInput.value);
 
-  // 雖然後端有庫存檢查，但前端也做一次提醒，避免使用者體驗不佳
-  if (qty > currentProduct.stock) {
-    alert(`數量已自動調整至庫存上限 ${currentProduct.stock}`);
+  if (!productId) {
+    alert("商品資訊錯誤");
+    return;
   }
 
   try {
-    // 【重要修改】將 /api/add_cart 改為 /api/cart
     const res = await fetch("/api/cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        account: currentUser,
-        product_id: currentProduct.id,
-        quantity: qtyInput.value,
+        gmail: gmail,
+        product_id: parseInt(productId),
+        quantity: quantity,
       }),
     });
 
-    if (!res.ok) {
-      // 嘗試解析錯誤訊息
-      const errorData = await res.json();
-      throw new Error(errorData.message || `伺服器錯誤: ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    // 修正：如果後端回傳 success: false，也應該顯示其 message
-    if (data.success === false) {
-      alert(data.message);
-    } else {
-      alert(data.message);
+    if (res.ok) {
+      alert("成功加入購物車！");
       cartModal.style.display = "none";
+    } else {
+      const data = await res.json();
+      alert("加入失敗：" + (data.message || "請稍後再試"));
     }
-
-    // 重新載入商品列表以刷新庫存資訊（雖然在這個頁面上不需要，但這是好習慣）
-    // loadProducts(); // 可選，但此頁面沒有顯示庫存變動，故暫不執行
-
-    cartModal.style.display = "none";
   } catch (err) {
-    console.error(err);
-    // 顯示來自後端的錯誤訊息
-    alert(err.message || "加入購物車失敗");
+    console.error("加入購物車請求失敗:", err);
+    alert("連線伺服器失敗");
   }
 };
 
 // =====================================
-// 側邊篩選
+// 篩選監聽器
 // =====================================
-document.getElementById("applyFilter").addEventListener("click", () => {
+document.getElementById("applyFilter")?.addEventListener("click", () => {
   currentFilters.category = document.getElementById("filterCategory").value;
   currentFilters.price =
     Number(document.getElementById("filterPrice").value) || 0;
   applyFilters();
 });
 
-// =====================================
-// Navbar 等級篩選
-// =====================================
+document.getElementById("filterPrice")?.addEventListener("input", (e) => {
+  document.getElementById("priceDisplay").innerText = e.target.value;
+});
+
 document.querySelectorAll(".dropdown-menu a[data-level]").forEach((a) => {
   a.addEventListener("click", (e) => {
     e.preventDefault();
@@ -263,27 +270,6 @@ document.querySelectorAll(".dropdown-menu a[data-level]").forEach((a) => {
   });
 });
 
-// =====================================
-// 價格滑桿顯示
-// =====================================
-const priceSlider = document.getElementById("filterPrice");
-const priceDisplay = document.getElementById("priceDisplay");
-if (priceSlider && priceDisplay) {
-  priceDisplay.innerText = priceSlider.value;
-  priceSlider.addEventListener(
-    "input",
-    () => (priceDisplay.innerText = priceSlider.value)
-  );
-}
-
-// =====================================
-// 排序
-// =====================================
-document.getElementById("sortOption").addEventListener("change", applyFilters);
-
-// =====================================
-// 初始化
-// =====================================
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
   updateNavbarUser();

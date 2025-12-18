@@ -4,20 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>隨便觀</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
-    <!-- 🔹 NAVBAR -->
     <nav class="navbar">
-        <div class="logo">隨便觀</div>
+        <a href="/" class="logo">隨便觀</a>
         <ul class="menu">
             <li class="dropdown">
                 商品分類
                 <ul class="dropdown-menu">
-                    <li><a href="/" data-level="">全部</a></li>
-                    <li><a href="/" data-level="一般">一般</a></li>
-                    <li><a href="/" data-level="精淬">精淬</a></li>
+                    <li><a href="#" class="filter-level" data-level="">全部</a></li>
+                    <li><a href="#" class="filter-level" data-level="一般">一般</a></li>
+                    <li><a href="#" class="filter-level" data-level="精淬">精淬</a></li>
                 </ul>
             </li>
             <li class="dropdown">
@@ -25,7 +24,7 @@
                 <ul class="dropdown-menu">
                     <li><a href="/cart">購物車</a></li>
                     <li><a href="/orders">歷史訂單</a></li>
-                    <li><a href="#">修改密碼</a></li>
+                    <li><a href="/login?mode=profile">修改資料</a></li>
                 </ul>
             </li>
         </ul>
@@ -37,10 +36,9 @@
 
     <div class="container">
 
-        <!-- 🔹 篩選區域 -->
         <aside class="sidebar">
             <h3>篩選</h3>
-            <label>種類：</label>
+            <label for="filterCategory">種類：</label>
             <select id="filterCategory">
                 <option value="">全部</option>
                 <option value="本草方劑">本草方劑</option>
@@ -50,13 +48,16 @@
                 <option value="素裳嶽履">素裳嶽履</option>
                 <option value="節禮賀幛">節禮賀幛</option>
             </select>
-            <br>
-            <label>價格上限：$<span id="priceDisplay">0</span></label>
-            <input type="range" id="filterPrice" min="0" max="1000" step="1" value="1000">
-            <br>
-            <button id="applyFilter">確認</button>
+            <br><br>
+            
+            <label>價格上限：$<span id="priceDisplay">1000</span></label>
+            <input type="range" id="filterPrice" min="0" max="1000" step="10" value="1000">
+            <br><br>
+            
+            <button id="applyFilter">確認篩選</button>
             <hr>
-            <label>排序方式：</label>
+            
+            <label for="sortOption">排序方式：</label>
             <select id="sortOption">
                 <option value="">— 不排序 —</option>
                 <option value="price_low">價格：低 ➝ 高</option>
@@ -64,61 +65,59 @@
             </select>
         </aside>
 
-        <!-- 🔹 商品區 -->
         <main class="product-area">
             <table class="product-table">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th>名稱</th>
+                        <th colspan="2">名稱</th>
                         <th>種類</th>
-                        <th>庫存</th>
+                        <th>數量</th>
                         <th>價格</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody id="productList">
-                    <!-- JS 動態載入 -->
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding: 50px;">正在尋找珍寶...</td>
+                    </tr>
                 </tbody>
             </table>
         </main>
     </div>
 
-    <!-- 🔹 商品簡介 Modal -->
     <div id="productModal" class="modal">
         <div class="modal-content product-modal">
             <span class="close" id="modalClose">&times;</span>
             <h2 id="modalName" class="modal-title"></h2>
             <div class="modal-body">
-                <img id="modalImg" class="modal-img">
+                <img id="modalImg" class="modal-img" alt="商品圖片">
                 <p id="modalDesc" class="modal-desc"></p>
             </div>
         </div>
     </div>
 
-    <!-- 🔹 加入購物車 Modal -->
     <div id="cartModal" class="modal">
         <div class="modal-content cart-modal">
             <span class="close" id="cartClose">&times;</span>
             <h2 class="modal-title">加入購物車</h2>
             <div class="cart-body">
-                <img id="cartImg" class="cart-img">
+                <img id="cartImg" class="cart-img" alt="商品圖片">
                 <div class="cart-info">
                     <p class="cart-name" id="cartProductName"></p>
-                    <label>數量：</label>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <button type="button" id="btnDecrease">−</button>
-                        <input type="number" id="quantityInput" value="1" min="1">
-                        <button type="button" id="btnIncrease">+</button>
+                    <label>選購數量：</label>
+                    <div class="qty-control" style="display:flex; gap:10px; align-items:center; margin: 10px 0;">
+                        <button type="button" id="btnDecrease" class="qty-btn">-</button>
+                        <input type="number" id="quantityInput" value="1" min="1" style="width: 100px; text-align: center;">
+                        <button type="button" id="btnIncrease" class="qty-btn">+</button>
                     </div>
-                    <p>小計：$<span id="subtotal">0</span></p>
-                    <button id="confirmAdd">確認加入</button>
+                    <p>小計：<strong style="color: #a57c14ff;">$<span id="subtotal">0</span></strong></p>
+                    <button id="confirmAdd" class="btn-primary">確認加入</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="../static/js/script.js"></script>
+    <script src="/static/js/script.js"></script>
 
 </body>
 </html>

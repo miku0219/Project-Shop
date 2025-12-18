@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">隨便觀</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2 id="formTitle">登入</h2>
+
+        <div id="nameGroup" style="display: none;">
+            <input type="text" id="userName" placeholder="顯示名稱">
+        </div>
+
+        <input type="email" id="userGmail" placeholder="Gmail">
+        <input type="password" id="userPassword" placeholder="密碼">
+
+        <button id="submitBtn">確認</button>
+
+        <div id="switchArea" class="auth-links">
+            <span id="switchText">還沒有帳號？</span>
+            <a href="javascript:void(0)" id="switchBtn">前往註冊</a>
+        </div>
+        
+        <div style="margin-top: 15px;"><a href="/">回首頁</a></div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+</body>
+</html>

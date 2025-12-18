@@ -3,13 +3,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>隨便觀</title>
-        <link rel="stylesheet" href="../static/css/style.css">
+        <title>隨便觀 - 購物車</title>
+        <link rel="stylesheet" href="/static/css/style.css">
     </head>
     <body>
-        <!-- NAVBAR 與首頁相同 -->
         <nav class="navbar">
-            <div class="logo">隨便觀</div>
+            <a href="/" class="logo">隨便觀</a>
             <ul class="menu">
                 <li class="dropdown">
                     商品分類
@@ -24,7 +23,7 @@
                     <ul class="dropdown-menu">
                         <li><a href="/cart">購物車</a></li>
                         <li><a href="/orders">歷史訂單</a></li>
-                        <li><a href="#">修改密碼</a></li>
+                        <li><a href="/login?mode=profile">修改資料</a></li>
                     </ul>
                 </li>
             </ul>
@@ -42,12 +41,14 @@
                         <th colspan="2">名稱</th>
                         <th>價格</th>
                         <th>選購數量</th>
-                        <th>小計</th>
+                        <th style="width:200px">小計</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody id="cartList">
-                    <!-- JS 動態生成 -->
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:30px;">載入中...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -57,7 +58,7 @@
             <button id="checkoutBtn">結帳</button>
         </div>
 
-        <script src="../static/js/script.js"></script>
-        <script src="../static/js/cart.js"></script>
+        <script src="/static/js/auth.js"></script>
+        <script src="/static/js/cart.js"></script>
     </body>
 </html>

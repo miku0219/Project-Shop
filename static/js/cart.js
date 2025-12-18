@@ -1,134 +1,71 @@
-const currentUser = localStorage.getItem("currentUser");
-if (!currentUser) {
-  alert("請先登入！");
-  window.location.href = "/login";
-}
+// 1. 取得登入資訊
+const cartUserGmail = localStorage.getItem("currentGmail");
 
-let cartData = [];
-
-// =====================================
-// 總額計算
-// =====================================
-function calculateTotal() {
-  let total = 0;
-  document.querySelectorAll(".item-checkbox").forEach((cb) => {
-    if (cb.checked) {
-      // 這裡改為從 input 取得實際的購買數量來計算
-      const row = cb.closest("tr");
-      const qty = parseInt(row.querySelector(".buy-qty").value) || 0;
-      const price =
-        parseFloat(row.querySelector(".buy-qty").dataset.price) || 0;
-
-      total += qty * price;
-    }
-  });
-
-  // 【修改點 1】移除 .toFixed(2)，顯示整數總計
-  document.getElementById("totalAmount").innerText = `總計: $${Math.round(
-    total
-  )}`;
-}
-
-// =====================================
-// 單品 checkbox/數量處理 (簡化邏輯)
-// =====================================
-
-// 單品 checkbox 切換事件 (只控制啟用/禁用)
-function onItemCheckboxChange(e) {
-  const cb = e.target;
-  const row = cb.closest("tr");
-  const qtyInput = row.querySelector(".buy-qty");
-  const subtotalSpan = row.querySelector(".subtotal");
-
-  qtyInput.disabled = !cb.checked;
-  if (cb.checked) {
-    qtyInput.dispatchEvent(new Event("input"));
-  } else {
-    // 如果取消勾選，小計歸零 (顯示整數 0)
-    subtotalSpan.innerText = "0";
+document.addEventListener("DOMContentLoaded", () => {
+  if (!cartUserGmail) {
+    alert("請先登入！");
+    window.location.href = "/login";
+    return;
   }
+  loadCartData();
+});
 
-  calculateTotal();
-  updateSelectAllStatus();
-}
+// 2. 載入購物車資料 (加入庫存檢查邏輯)
+async function loadCartData() {
+  const cartList = document.getElementById("cartList");
+  if (!cartList) return;
 
-// 更新全選框狀態 (保持不變)
-function updateSelectAllStatus() {
-  const checkboxes = document.querySelectorAll(".item-checkbox");
-  const selectAll = document.getElementById("selectAll");
-  if (!selectAll || checkboxes.length === 0) return;
-
-  const allChecked = Array.from(checkboxes).every((cb) => cb.checked);
-  const anyChecked = Array.from(checkboxes).some((cb) => cb.checked);
-  selectAll.checked = allChecked;
-  selectAll.indeterminate = anyChecked && !allChecked;
-}
-
-// 全選框事件 (保持不變)
-function onSelectAllChange(e) {
-  const checked = e.target.checked;
-
-  document.querySelectorAll(".item-checkbox").forEach((cb) => {
-    if (cb.checked !== checked) {
-      cb.checked = checked;
-      cb.dispatchEvent(new Event("change"));
-    }
-  });
-}
-
-// 綁定全選框 (保持不變)
-function bindSelectAll() {
-  const selectAll = document.getElementById("selectAll");
-  if (selectAll && !selectAll.dataset.bound) {
-    selectAll.addEventListener("change", onSelectAllChange);
-    selectAll.dataset.bound = "true";
-  }
-}
-
-// =====================================
-// 載入購物車
-// =====================================
-async function loadCart() {
   try {
-    const res = await fetch(`/api/cart?account=${currentUser}`);
-    if (!res.ok) throw new Error("無法取得購物車資料");
-    const data = await res.json();
-    cartData = data;
+    const [cartRes, productsRes] = await Promise.all([
+      fetch(`/api/cart?gmail=${cartUserGmail}`),
+      fetch("/api/products"),
+    ]);
 
-    const cartList = document.getElementById("cartList");
+    const cartData = await cartRes.json();
+    const allProducts = await productsRes.json();
+
     cartList.innerHTML = "";
 
-    if (!data || data.length === 0) {
+    if (!cartData || cartData.length === 0) {
       cartList.innerHTML =
-        '<tr><td colspan="7" style="font-size: 40px; color:#dec381; text-align:center;">購物車目前沒有商品</td></tr>';
-      calculateTotal();
+        '<tr><td colspan="7" style="font-size: 50px; color:#dec381; text-align:center; padding: 50px;">購物車目前沒有商品</td></tr>';
+      updateTotalDisplay();
       return;
     }
 
-    data.forEach((item) => {
-      const initialQty = item.current_qty || 1;
-      const maxQty = item.quantity;
-      const subtotalValue = item.price * initialQty;
+    cartData.forEach((item) => {
+      // 1. 從所有商品中尋找該商品的詳細資料
+      const productInfo = allProducts.find((p) => p.id === item.product_id);
+
+      // 2. 獲取庫存與等級（若找不到則給予預設值）
+      const maxStock = productInfo ? productInfo.stock : 99;
+      const productLevel = productInfo ? productInfo.level : "一般";
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-                <td><input type="checkbox" class="item-checkbox"data-product-id="${
+                <td><input type="checkbox" class="item-checkbox" data-product-id="${
                   item.product_id
                 }"></td>
-                <td><img src="${item.image}" class="product-img"></td>
-                <td class="product-name" data-level="${item.level}">${
+                <td><img src="${
+                  item.image
+                }" style="width:120px; height:120px; object-fit:cover; border-radius:5px;"></td>
+                
+                <td class="product-name" data-level="${productLevel}">${
         item.name
       }</td>
-                <td>$${item.price}</td>
                 
-                <td><input type="number" class="buy-qty" min="1" max="${maxQty}" value="${initialQty}" disabled data-price="${
-        item.price
-      }"></td>
-                
+                <td class="unit-price">$${Math.round(item.price)}</td>
+                <td>
+                    <input type="number" class="buy-qty" 
+                           min="1" max="${maxStock}" 
+                           value="${item.quantity || 1}" 
+                           data-price="${item.price}" 
+                           style="width: 120px; text-align: center;">
+                    <div style="font-size: 14px; color: #888;">庫存: ${maxStock}</div>
+                </td>
                 <td>$<span class="subtotal">${Math.round(
-                  subtotalValue
+                  item.price * (item.quantity || 1)
                 )}</span></td>
-                
                 <td><button class="deleteBtn" data-id="${
                   item.cart_id
                 }">刪除</button></td>
@@ -136,150 +73,122 @@ async function loadCart() {
       cartList.appendChild(tr);
     });
 
-    document.querySelectorAll(".buy-qty").forEach((input) => {
-      input.addEventListener("input", (e) => {
-        let qty = parseInt(e.target.value);
-        const price = parseFloat(e.target.dataset.price);
-        const max = parseInt(e.target.max);
+    initSelectionLogic();
+    rebindCartEvents();
+    updateTotalDisplay();
 
-        if (qty < 1 || isNaN(qty)) qty = 1;
-        if (qty > max) {
-          qty = max;
-          alert(`購買數量不可高於庫存上限：${max}`);
-        }
-
-        e.target.value = qty;
-
-        const newSubtotal = qty * price;
-
-        const row = e.target.closest("tr");
-
-        // 【修改點 3】移除 .toFixed(2)，顯示整數小計
-        row.querySelector(".subtotal").innerText = Math.round(newSubtotal);
-
-        calculateTotal();
-      });
-    });
-
-    document
-      .querySelectorAll(".item-checkbox")
-      .forEach((cb) => cb.addEventListener("change", onItemCheckboxChange));
-
-    document.querySelectorAll(".deleteBtn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const productName = btn
-          .closest("tr")
-          .querySelector(".product-name")
-          .innerText.trim();
-        if (!confirm(`確定要將商品「${productName}」從購物車中移除嗎？`)) {
-          return;
-        }
-        try {
-          const delRes = await fetch(
-            `/api/cart/${btn.dataset.id}?account=${currentUser}`,
-            {
-              method: "DELETE",
-            }
-          );
-          if (!delRes.ok) throw new Error("刪除失敗");
-
-          const data = await delRes.json();
-          if (data.success) {
-            loadCart();
-          } else {
-            alert(data.message || "刪除失敗");
-          }
-        } catch (error) {
-          console.error("刪除商品發生錯誤:", error);
-          alert("刪除商品失敗，請稍後再試。");
-        }
-      });
-    });
-
-    calculateTotal();
-    updateSelectAllStatus();
+    // 如果你有 updateNavbarUser 函式，記得在這裡呼叫
+    if (typeof updateNavbarUser === "function") updateNavbarUser();
   } catch (err) {
-    console.error(err);
-    const cartList = document.getElementById("cartList");
-    cartList.innerHTML =
-      '<tr><td colspan="7" style="font-size: 20px; color:red; text-align:center;">載入購物車資料失敗！</td></tr>';
+    console.error("載入出錯:", err);
   }
 }
 
-// =====================================
-// 結帳 (邏輯調整：移除小數點顯示)
-// =====================================
-document.getElementById("checkoutBtn").addEventListener("click", async () => {
-  const selectedItems = [];
-  let totalAmount = 0;
+// 3. 全選與子選項連動邏輯 (修正點 1)
+function initSelectionLogic() {
+  const selectAll = document.getElementById("selectAll");
+  const itemCheckboxes = document.querySelectorAll(".item-checkbox");
 
-  let isValid = true;
-  document.querySelectorAll(".item-checkbox").forEach((cb) => {
-    if (cb.checked) {
-      const row = cb.closest("tr");
-      const qtyInput = row.querySelector(".buy-qty");
-      const price = parseFloat(qtyInput.dataset.price);
-      const qty = parseInt(qtyInput.value);
-      const max = parseInt(qtyInput.max);
+  if (!selectAll) return;
 
-      if (qty <= 0 || isNaN(qty) || qty > max) {
-        alert(
-          `商品：${row
-            .querySelector(".product-name")
-            .innerText.trim()} 的數量不合法 (數量必須在 1 到 ${max} 之間)，請重新檢查！`
-        );
-        isValid = false;
-        return;
+  // 全選控製子項
+  selectAll.onchange = (e) => {
+    itemCheckboxes.forEach((cb) => (cb.checked = e.target.checked));
+    updateTotalDisplay();
+  };
+
+  // 子項控製全選
+  itemCheckboxes.forEach((cb) => {
+    cb.onchange = () => {
+      const allChecked = Array.from(itemCheckboxes).every((c) => c.checked);
+      selectAll.checked = allChecked;
+      updateTotalDisplay();
+    };
+  });
+}
+
+// 4. 事件重新綁定 (修正點 2)
+function rebindCartEvents() {
+  document.querySelectorAll(".buy-qty").forEach((input) => {
+    input.oninput = (e) => {
+      const row = e.target.closest("tr");
+      const price = parseFloat(e.target.dataset.price);
+      const max = parseInt(e.target.max);
+      let qty = parseInt(e.target.value);
+
+      // 超過庫存自動跳回最大值
+      if (qty > max) {
+        alert(`抱歉，該商品庫存僅剩 ${max} 件`);
+        qty = max;
+        e.target.value = max;
       }
+      if (isNaN(qty) || qty < 1) qty = 1;
 
-      selectedItems.push([parseInt(cb.dataset.productId), qty]);
-      totalAmount += qty * price;
-    }
+      row.querySelector(".subtotal").innerText = Math.round(price * qty);
+      updateTotalDisplay();
+    };
   });
 
-  if (!isValid) return;
+  document.querySelectorAll(".deleteBtn").forEach((btn) => {
+    btn.onclick = async () => {
+      if (!confirm("確定要移除此商品嗎？")) return;
+      const res = await fetch(
+        `/api/cart/${btn.dataset.id}?gmail=${cartUserGmail}`,
+        { method: "DELETE" }
+      );
+      if (res.ok) loadCartData();
+    };
+  });
+}
 
-  if (selectedItems.length === 0) {
-    alert("請先勾選商品！");
+// 5. 總金額計算
+function updateTotalDisplay() {
+  let total = 0;
+  document.querySelectorAll(".item-checkbox:checked").forEach((cb) => {
+    const row = cb.closest("tr");
+    const sub = parseInt(row.querySelector(".subtotal").innerText);
+    total += sub;
+  });
+  const totalElem = document.getElementById("totalAmount");
+  if (totalElem) totalElem.innerText = `總計: $${total}`;
+}
+
+// 6. 結帳功能
+// cart.js 中的結帳按鈕邏輯
+document.getElementById("checkoutBtn").onclick = async () => {
+  const selected = [];
+  const checkedBoxes = document.querySelectorAll(".item-checkbox:checked");
+
+  if (checkedBoxes.length === 0) {
+    alert("請先勾選欲結帳的商品！");
     return;
   }
 
-  // 【修改點 4】移除 .toFixed(2)，顯示整數總計
-  const totalDisplay = Math.round(totalAmount);
+  checkedBoxes.forEach((cb) => {
+    const row = cb.closest("tr");
+    const qty = parseInt(row.querySelector(".buy-qty").value);
+    selected.push([parseInt(cb.dataset.productId), qty]);
+  });
 
-  if (!confirm(`確定要結帳嗎？\n總計: $${totalDisplay}`)) {
-    return;
-  }
+  if (!confirm(`確定要結帳嗎？`)) return;
 
   try {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        account: currentUser,
-        selected_items: selectedItems,
-      }),
+      body: JSON.stringify({ gmail: cartUserGmail, selected_items: selected }),
     });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || `伺服器錯誤: ${res.status}`);
-    }
-
     const data = await res.json();
-    alert(data.message);
-    loadCart();
-  } catch (err) {
-    console.error("結帳失敗:", err);
-    alert(err.message || "結帳失敗，請檢查網路或稍後再試。");
-  }
-});
 
-// =====================================
-// 初始化 (保持不變)
-// =====================================
-document.addEventListener("DOMContentLoaded", () => {
-  bindSelectAll();
-  loadCart();
-  updateNavbarUser();
-});
+    if (res.ok) {
+      alert("結帳成功！庫存已扣除。");
+      window.location.href = "/orders";
+    } else {
+      // 這裡會顯示「商品庫存不足」的具體訊息
+      alert("結帳失敗：" + data.message);
+    }
+  } catch (err) {
+    alert("系統連線失敗");
+  }
+};

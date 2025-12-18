@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>隨便觀</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <title>隨便觀 - 歷史訂單</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <!-- NAVBAR 與首頁相同 -->
     <nav class="navbar">
-        <div class="logo">隨便觀</div>
+        <a href="/" class="logo">隨便觀</a>
         <ul class="menu">
             <li class="dropdown">
                 商品分類
@@ -24,7 +23,7 @@
                 <ul class="dropdown-menu">
                     <li><a href="/cart">購物車</a></li>
                     <li><a href="/orders">歷史訂單</a></li>
-                    <li><a href="#">修改密碼</a></li>
+                    <li><a href="/login?mode=profile">修改資料</a></li>
                 </ul>
             </li>
         </ul>
@@ -38,8 +37,7 @@
         <table>
             <thead>
                 <tr>
-                    <th></th>
-                    <th>名稱</th>
+                    <th colspan="2">名稱</th>
                     <th>價格</th>
                     <th>數量</th>
                     <th>總計</th>
@@ -48,12 +46,13 @@
                 </tr>
             </thead>
             <tbody id="ordersList">
-                <!-- JS 動態載入 -->
+                <tr>
+                    <td colspan="7" style="text-align:center; padding: 40px;">訂單資料讀取中...</td>
+                </tr>
             </tbody>
         </table>
     </div>
 
-    <script src="../static/js/script.js"></script>
-    <script src="../static/js/orders.js"></script>
+    <script src="/static/js/orders.js"></script>
 </body>
 </html>
